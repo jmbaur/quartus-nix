@@ -27,6 +27,9 @@ let
     splitVersion
     ;
 
+  # Nix's seccomp settings (via the syscall-filter nix.conf option) disallow
+  # creating setuid/setgid binaries, so we shim in our own chmod that unsets
+  # the setuid/setgid bits in all chmod calls.
   fixChmod = pkgsBuildBuild.callPackage (
     { stdenv }:
     stdenv.mkDerivation {
@@ -37,6 +40,8 @@ let
     }
   ) { };
 
+  # The quartus installer assumes it is running on an FHS-compliant Linux
+  # system.
   installerFhsEnv = pkgsBuildBuild.callPackage (
     { buildFHSEnv, writeScript }:
     buildFHSEnv {
