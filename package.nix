@@ -128,7 +128,8 @@ stdenv.mkDerivation (finalAttrs: {
   buildPhase = ''
     runHook preBuild
 
-    mkdir -p $out
+    mkdir -p $out/nix-support
+    echo 'export PATH=$PATH:${placeholder "out"}/qprogrammer/quartus/bin' >$out/nix-support/setup-hook
     ${lib.getExe installerFhsEnv} /lib64/ld-linux-x86-64.so.2 $src --accept_eula 1 --mode unattended --unattendedmodeui none --installdir $out
 
     runHook postBuild
