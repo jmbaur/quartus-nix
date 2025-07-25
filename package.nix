@@ -8,6 +8,7 @@
   fetchurl,
   freetype,
   glib,
+  glibcLocales,
   kdePackages,
   lib,
   libdrm,
@@ -133,12 +134,18 @@ stdenv.mkDerivation (finalAttrs: {
     echo 'export PATH=$PATH:${placeholder "out"}/qprogrammer/quartus/bin' >$out/nix-support/setup-hook
     ${lib.getExe installerFhsEnv} /lib64/ld-linux-x86-64.so.2 $src --accept_eula 1 --mode unattended --unattendedmodeui none --installdir $out
 
+    qenv=$out/qprogrammer/quartus/adm/qenv.sh
+    linenr=$(grep --line-number '^[^#]' $qenv | head -n1 | cut -d':' -f1)
+
     # Add missing utilities to PATH, injecting a line on the first
     # non-commented line in the entrypoint qenv.sh file that prepends the
     # current PATH.
-    qenv=$out/qprogrammer/quartus/adm/qenv.sh
-    linenr=$(grep --line-number '^[^#]' $qenv | head -n1 | cut -d':' -f1)
     sed -i "''${linenr}iPATH=${lib.makeBinPath [ locale ]}:\$PATH\n" $qenv
+
+    # Add locales that would otherwise be missing in a sandboxed environment.
+    # This probably isn't necessary, however it prevents warnings from showing
+    # up during builds.
+    sed -i "''${linenr}iexport LOCALE_ARCHIVE=${glibcLocales}/lib/locale/locale-archive\n" $qenv
 
     runHook postBuild
   '';
