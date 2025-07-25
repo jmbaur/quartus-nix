@@ -138,7 +138,7 @@ stdenv.mkDerivation (finalAttrs: {
     # current PATH.
     qenv=$out/qprogrammer/quartus/adm/qenv.sh
     linenr=$(grep --line-number '^[^#]' $qenv | head -n1 | cut -d':' -f1)
-    sed -i "''${linenr}iPATH=${lib.makeBinPath [ locale ]}:\$PATH" $qenv
+    sed -i "''${linenr}iPATH=${lib.makeBinPath [ locale ]}:\$PATH\n" $qenv
 
     runHook postBuild
   '';
