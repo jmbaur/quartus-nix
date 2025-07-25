@@ -12,6 +12,7 @@
   lib,
   libdrm,
   libxcrypt-legacy,
+  locale,
   ncurses5,
   pkgsBuildBuild,
   qt6,
@@ -131,6 +132,13 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/nix-support
     echo 'export PATH=$PATH:${placeholder "out"}/qprogrammer/quartus/bin' >$out/nix-support/setup-hook
     ${lib.getExe installerFhsEnv} /lib64/ld-linux-x86-64.so.2 $src --accept_eula 1 --mode unattended --unattendedmodeui none --installdir $out
+
+    # Add missing utilities to PATH, injecting a line on the first
+    # non-commented line in the entrypoint qenv.sh file that prepends the
+    # current PATH.
+    qenv=$out/qprogrammer/quartus/adm/qenv.sh
+    linenr=$(grep --line-number '^[^#]' $qenv | head -n1 | cut -d':' -f1)
+    sed -i "''${linenr}iPATH=${lib.makeBinPath [ locale ]}:\$PATH" $qenv
 
     runHook postBuild
   '';
