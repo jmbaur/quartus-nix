@@ -21,7 +21,8 @@
   sqlite,
   stdenv,
   xorg,
-}:
+  ...
+}@args:
 
 let
   inherit (lib.versions)
@@ -57,7 +58,7 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "QuartusProProgrammer";
-  version = "24.2.0-40";
+  version = args._source.version;
 
   strictDeps = true;
 
@@ -65,12 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
   dontConfigure = true;
   dontInstall = true;
 
-  src = fetchurl {
-    url = "https://downloads.intel.com/akdlm/software/acdsinst/${majorMinor finalAttrs.version}/${lib.last (splitVersion finalAttrs.version)}/ib_installers/QuartusProProgrammerSetup-${
-      lib.replaceStrings [ "-" ] [ "." ] finalAttrs.version
-    }-linux.run";
-    hash = "sha256-hnRm96XFtyMhC2TENzTXTcKbTS0vn1mxOMZUZ+2wKag=";
-  };
+  src = fetchurl { inherit (args._source) url hash; };
 
   nativeBuildInputs = [
     bubblewrap
