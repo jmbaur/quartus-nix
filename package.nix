@@ -25,11 +25,6 @@
 }@args:
 
 let
-  inherit (lib.versions)
-    majorMinor
-    splitVersion
-    ;
-
   # Nix's seccomp settings (via the syscall-filter nix.conf option) disallow
   # creating setuid/setgid binaries, so we shim in our own chmod that unsets
   # the setuid/setgid bits in all chmod calls.
@@ -56,7 +51,7 @@ let
     }
   ) { };
 in
-stdenv.mkDerivation (finalAttrs: {
+stdenv.mkDerivation (_: {
   pname = "QuartusProProgrammer";
   version = args._source.version;
 
