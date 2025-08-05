@@ -140,7 +140,7 @@ stdenv.mkDerivation (_: {
     # Add locales that would otherwise be missing in a sandboxed environment.
     # This probably isn't necessary, however it prevents warnings from showing
     # up during builds.
-    sed -i "''${linenr}iexport LOCALE_ARCHIVE=${glibcLocales}/lib/locale/locale-archive\n" $qenv
+    sed -i "''${linenr}iexport LOCALE_ARCHIVE=''${LOCALE_ARCHIVE:-${glibcLocales}/lib/locale/locale-archive}\n" $qenv
 
     runHook postBuild
   '';
