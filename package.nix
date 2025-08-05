@@ -16,10 +16,12 @@
   locale,
   ncurses5,
   pkgsBuildBuild,
+  python3,
   qt6,
   readline,
   sqlite,
   stdenv,
+  tcl,
   xorg,
   ...
 }@args:
@@ -110,8 +112,10 @@ stdenv.mkDerivation (_: {
     libdrm
     libxcrypt-legacy
     ncurses5
+    python3
     readline
     sqlite
+    tcl
     xorg.libICE
     xorg.libSM
     xorg.libX11
