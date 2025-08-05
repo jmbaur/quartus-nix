@@ -31,8 +31,9 @@
 
         config = lib.mkIf config.programs.quartus-pro-programmer.enable {
           nixpkgs.overlays = [ inputs.self.overlays.default ];
-          environment.systemPackages = [ pkgs.quartus-pro-programmer ];
+          environment.systemPackages = [ config.programs.quartus-pro-programmer.package ];
           environment.profileRelativeSessionVariables.PATH = [ "/qprogrammer/quartus/bin" ];
+          environment.pathsToLink = [ "/qprogrammer" ];
         };
       };
 
