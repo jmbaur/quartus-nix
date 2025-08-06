@@ -4,11 +4,13 @@
   bash,
   bubblewrap,
   bzip2,
+  coreutils,
   db4,
   fetchurl,
   freetype,
   glib,
   glibcLocales,
+  gnugrep,
   kdePackages,
   lib,
   libdrm,
@@ -135,7 +137,13 @@ stdenv.mkDerivation (_: {
     # Add missing utilities to PATH, injecting a line on the first
     # non-commented line in the entrypoint qenv.sh file that prepends the
     # current PATH.
-    sed -i "''${linenr}iPATH=${lib.makeBinPath [ locale ]}:\$PATH\n" $qenv
+    sed -i "''${linenr}iPATH=${
+      lib.makeBinPath [
+        coreutils
+        gnugrep
+        locale
+      ]
+    }:\$PATH\n" $qenv
 
     # Add locales that would otherwise be missing in a sandboxed environment.
     # This probably isn't necessary, however it prevents warnings from showing
