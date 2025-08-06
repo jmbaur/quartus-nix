@@ -17,24 +17,10 @@
       };
 
     nixosModules.default =
+      { config, lib, ... }:
       {
-        config,
-        lib,
-        pkgs,
-        ...
-      }:
-      {
-        options.programs.quartus-pro-programmer = {
-          enable = lib.mkEnableOption "quartus-pro-programmer";
-          package = lib.mkPackageOption pkgs "quartus-pro-programmer" { };
-        };
-
-        config = lib.mkIf config.programs.quartus-pro-programmer.enable {
-          nixpkgs.overlays = [ inputs.self.overlays.default ];
-          environment.systemPackages = [ config.programs.quartus-pro-programmer.package ];
-          environment.profileRelativeSessionVariables.PATH = [ "/qprogrammer/quartus/bin" ];
-          environment.pathsToLink = [ "/qprogrammer" ];
-        };
+        imports = [ ./module.nix ];
+        nixpkgs.overlays = [ inputs.self.overlays.default ];
       };
 
     legacyPackages = inputs.nixpkgs.lib.genAttrs [ "x86_64-linux" ] (
