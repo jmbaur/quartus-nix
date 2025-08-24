@@ -7,15 +7,11 @@
 {
   options.programs.quartus-pro-programmer = {
     enable = lib.mkEnableOption "quartus-pro-programmer";
-    package = lib.mkPackageOption pkgs "quartus-pro-programmer" { };
+    package = lib.mkPackageOption pkgs "quartus-pro-programmer-latest" { };
   };
 
   config = lib.mkIf config.programs.quartus-pro-programmer.enable {
-    environment = {
-      systemPackages = [ config.programs.quartus-pro-programmer.package ];
-      profileRelativeSessionVariables.PATH = [ "/qprogrammer/quartus/bin" ];
-      pathsToLink = [ "/qprogrammer" ];
-    };
+    environment.systemPackages = [ config.programs.quartus-pro-programmer.package ];
 
     users.groups.plugdev = { };
 

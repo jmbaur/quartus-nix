@@ -4,17 +4,53 @@
   outputs = inputs: {
     overlays.default =
       final: prev:
-      builtins.listToAttrs (
-        map (_source: {
-          name = "quartus-pro-programmer-${
-            builtins.replaceStrings [ "." ] [ "_" ] (prev.lib.versions.majorMinor _source.version)
-          }";
-          value = prev.callPackage ./package.nix { inherit _source; };
-        }) (import ./sources.nix)
-      )
-      // {
-        quartus-pro-programmer = final.quartus-pro-programmer-25_1;
-      };
+      let
+        inherit (prev.lib)
+          flatten
+          foldl
+          listToAttrs
+          mapAttrsToList
+          replaceStrings
+          versionOlder
+          versions
+          ;
+      in
+      {
+        makeQuartus = prev.callPackage ./package.nix { };
+      }
+      // listToAttrs (
+        flatten (
+          mapAttrsToList (
+            package: sources:
+            (map (source: {
+              name = "${package}-${replaceStrings [ "." ] [ "_" ] (versions.majorMinor source.version)}";
+              value = final.makeQuartus {
+                pname = package;
+                inherit (source) version;
+                inherit source;
+              };
+            }) sources)
+            # Add an alias to the latest version, suffixed with "-latest"
+            ++ (
+              let
+                source = foldl (a: b: if versionOlder a.version b.version then b else a) {
+                  version = "0";
+                } sources;
+              in
+              [
+                {
+                  name = "${package}-latest";
+                  value = final.makeQuartus {
+                    pname = package;
+                    inherit (source) version;
+                    inherit source;
+                  };
+                }
+              ]
+            )
+          ) (import ./sources.nix)
+        )
+      );
 
     nixosModules.default =
       { config, lib, ... }:
