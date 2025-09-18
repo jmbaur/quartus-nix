@@ -78,6 +78,8 @@ lib.makeOverridable (
   buildFHSEnv {
     inherit pname version executableName;
 
+    extraBwrapArgs = [ "--ro-bind-try /etc/jtagd /etc/jtagd" ];
+
     extraInstallCommands = ''
       progs_to_wrap=(
         "${installation}"/qprogrammer/quartus/bin/*
