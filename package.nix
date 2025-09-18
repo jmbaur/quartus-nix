@@ -146,6 +146,7 @@ lib.makeOverridable (
         sqlite
         tcl
         tclPackages.tk
+        udev
         xcb-util-cursor
         xorg.libICE
         xorg.libSM
