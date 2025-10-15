@@ -82,6 +82,7 @@ lib.makeOverridable (
 
     extraInstallCommands = ''
       progs_to_wrap=(
+        "${installation}"/qprogrammer/syscon/bin/*
         "${installation}"/qprogrammer/quartus/bin/*
         "${installation}"/quartus/bin/*
         "${installation}"/quartus/sopc_builder/bin/qsys-{generate,edit,script}
