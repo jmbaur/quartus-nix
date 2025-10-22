@@ -80,6 +80,11 @@ lib.makeOverridable (
 
     extraBwrapArgs = [ "--ro-bind-try /etc/jtagd /etc/jtagd" ];
 
+    # Ensure software like lmutil can run.
+    extraBuildCommands = ''
+      ln -s /lib64/ld-linux-x86-64.so.2 $out/usr/lib64/ld-lsb-x86-64.so.3
+    '';
+
     extraInstallCommands = ''
       progs_to_wrap=(
         "${installation}"/qprogrammer/syscon/bin/*
