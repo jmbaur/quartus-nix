@@ -27,7 +27,6 @@ let
     { buildFHSEnv, writeScript }:
     buildFHSEnv {
       name = "quartus-installer-fhs-env";
-      extraBwrapArgs = [ "--bind /nix /nix" ]; # ensure $out is read-write
       runScript = writeScript "quartus-installer" ''
         env LD_PRELOAD=${fixChmod} "$@"
       '';
