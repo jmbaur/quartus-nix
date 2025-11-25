@@ -38,50 +38,74 @@ lib.makeOverridable (
     pname,
     version,
     source,
-    disableComponents ? [ ],
   }:
 
   let
     executableName = "quartus-shell";
 
     # buildFHSEnv will pass through the host's /nix/store, so we can make our
-    # lives easier by doing as little as possible ahead of time when performing
-    # the quartus "installation", then re-organize things to work later.
-    installation =
-      runCommand "${pname}-installation-${version}"
-        {
-          src = fetchurl { inherit (source) url hash; };
-        }
-        # We allow `src` to either be a tarball or the self-extracting
-        # executable itself. This allows for us to support installations of
-        # quartus-pro-programmer, which is not a tarball.
+    # lives easier by doing as little as possible ahead of time when
+    # performing the quartus "installation", then re-organize things to work
+    # later. We also do all this work in `postFetch` of `fetchurl` so that we
+    # don't need _two_ large derivations (one for the downloaded tarball and
+    # another for the installation).
+    installation = fetchurl {
+      name = "${pname}-installation-${version}";
+
+      inherit (source) url hash;
+
+      recursiveHash = true;
+      downloadToTemp = true;
+
+      postFetch =
+        # We allow `downloadedFile` to either be a tarball or the
+        # self-extracting executable itself. This allows for us to support
+        # installations of quartus-pro-programmer, which is not a tarball.
         ''
-          if [[ $(head --bytes=4 $src) == $(printf "\x7fELF") ]]; then
-            run_cmd=$src
+          if [[ $(head --bytes=4 $downloadedFile) == $(printf "\x7fELF") ]]; then
+            chmod +x $downloadedFile
+            run_cmd=$downloadedFile
           else
-            tar -xvf $src
+            tar -xvf $downloadedFile
 
             # There will be one file called setup.sh or setup_pro.sh in the case of quartus prime pro
             run_cmd=$(grep 'export CMD_NAME' setup*.sh | sed 's/.*SCRIPT_PATH\/\(.*\)"/\1/')
           fi
 
           ${lib.getExe installerFhsEnv} /lib64/ld-linux-x86-64.so.2 $run_cmd \
-          --accept_eula 1 \
-          --mode unattended --unattendedmodeui none \
-          --installdir $out \
-          ${lib.optionalString (
-            disableComponents != [ ]
-          ) "--disable-components ${lib.concatStringsSep "," disableComponents}"}
+            --accept_eula 1 \
+            --mode unattended --unattendedmodeui none \
+            --installdir $out
+
+          # No need for this, it's just another chance for
+          # non-reproducibility/self-referencing to leak in.
+          rm -rf $out/logs $out/uninstall
+
+          # The .sopc_builder file references $out, which is disallowed in
+          # FODs. Since we provide a reference to the installation from within
+          # the FHS env at /quartus, we can point to that here.
+          if [[ -f $out/quartus/sopc_builder/.sopc_builder ]]; then
+            sed -i 's,sopc_builder.*,sopc_builder = "/quartus/quartus/sopc_builder";,' \
+              $out/quartus/sopc_builder/.sopc_builder
+            sed -i 's,sopc_quartus_dir.*,sopc_quartus_dir = "/quartus/quartus";,' \
+              $out/quartus/sopc_builder/.sopc_builder
+          fi
         '';
+    };
   in
   buildFHSEnv {
     inherit pname version executableName;
 
     extraBwrapArgs = [ "--ro-bind-try /etc/jtagd /etc/jtagd" ];
 
-    # Ensure software like lmutil can run.
     extraBuildCommands = ''
+      # Ensure software like lmutil can run.
       ln -s /lib64/ld-linux-x86-64.so.2 $out/usr/lib64/ld-lsb-x86-64.so.3
+
+      # Add a reference to the installation from within the FHS environment. In
+      # addition to convenience, this allows us to remove references to $out
+      # from the FOD quartus installation derivation.
+      ln -s ${installation} $out/quartus
     '';
 
     extraInstallCommands = ''
@@ -91,7 +115,7 @@ lib.makeOverridable (
         "${installation}"/quartus/bin/*
         "${installation}"/quartus/sopc_builder/bin/qsys-{generate,edit,script}
         "${installation}"/questa_fse/bin/*
-        "${installation}"/questa_fse/linux_x86_64/lmutil
+        "${installation}"/questa_fse/linux_x86_64/lm*
       )
 
       wrapper=$out/bin/${executableName}
