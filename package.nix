@@ -3,7 +3,6 @@
   fetchurl,
   lib,
   pkgsBuildBuild,
-  runCommand,
   runtimeShell,
 }:
 

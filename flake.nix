@@ -52,12 +52,10 @@
         )
       );
 
-    nixosModules.default =
-      { config, lib, ... }:
-      {
-        imports = [ ./module.nix ];
-        nixpkgs.overlays = [ inputs.self.overlays.default ];
-      };
+    nixosModules.default = {
+      imports = [ ./module.nix ];
+      nixpkgs.overlays = [ inputs.self.overlays.default ];
+    };
 
     legacyPackages = inputs.nixpkgs.lib.genAttrs [ "x86_64-linux" ] (
       system:
