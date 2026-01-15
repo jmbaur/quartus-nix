@@ -127,6 +127,7 @@ lib.makeOverridable (
     extraInstallCommands = ''
       progs_to_wrap=(
         "${installation}"/qprogrammer/syscon/bin/*
+        "${installation}"/qprogrammer/syscon/bin/**/*
         "${installation}"/qprogrammer/quartus/bin/*
         "${installation}"/quartus/bin/*
         "${installation}"/quartus/sopc_builder/bin/qsys-*
@@ -137,6 +138,9 @@ lib.makeOverridable (
       wrapper=$out/bin/${executableName}
       progs_wrapped=()
       for prog in ''${progs_to_wrap[@]}; do
+        if [[ -d "$prog" ]]; then
+          continue
+        fi
         relname="''${prog#"${installation}/"}"
         bname="$(basename "$relname")"
         wrapped="$out/$relname"
