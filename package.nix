@@ -1,6 +1,7 @@
 {
   buildFHSEnv,
   fetchurl,
+  fetchzip,
   lib,
   pkgsBuildBuild,
   runtimeShell,
@@ -71,10 +72,26 @@ lib.makeOverridable (
             run_cmd=$(grep 'export CMD_NAME' setup*.sh | sed 's/.*SCRIPT_PATH\/\(.*\)"/\1/')
           fi
 
-          ${lib.getExe installerFhsEnv} /lib64/ld-linux-x86-64.so.2 $run_cmd \
-            --accept_eula 1 \
-            --mode unattended --unattendedmodeui none \
-            --installdir $out
+          installer_args=(
+            "--accept_eula" "1"
+            "--mode" "unattended"
+            "--unattendedmodeui" "none"
+            "--installdir" "$out"
+          )
+
+          ${lib.getExe installerFhsEnv} /lib64/ld-linux-x86-64.so.2 $run_cmd "''${installer_args[@]}"
+
+          # Apply patches, if there are any
+          ${lib.concatMapStringsSep "\n" (fetchzipArgs: ''
+            (
+              patch_args=()
+              if [[ -e $out/qprogrammer ]]; then
+                patch_args+=("--patch_to" "qprogrammer")
+              fi
+
+              ${lib.getExe installerFhsEnv} /lib64/ld-linux-x86-64.so.2 ${fetchzip fetchzipArgs}/*linux.run "''${installer_args[@]}" "''${patch_args[@]}"
+            )
+          '') (source.patches or [ ])}
 
           # No need for this, it's just another chance for
           # non-reproducibility/self-referencing to leak in.
