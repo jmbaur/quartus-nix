@@ -34,19 +34,28 @@ in
 {
   quartus-prime-pro = [
     {
+      version = "25.3.1";
+      url = "https://downloads.intel.com/akdlm/software/acdsinst/25.3.1/100/ib_tar/Quartus-pro-25.3.1.100-linux-complete.tar";
+      hash = "sha256-QkPjtjzPbN7sNhX5mqkwECbJiXikRFkajpGGCzdk3vY=";
+      patches = patchesFor25_3;
+    }
+    {
       version = "25.1.1";
       url = "https://downloads.intel.com/akdlm/software/acdsinst/25.1.1/125/ib_tar/Quartus-pro-25.1.1.125-linux-complete.tar";
-      hash = "sha256-Pl5Mlgcs747P4K0INgEWEDH2LFJpBh6GThipU5E65kE=";
+      hash = "sha256-rS6SZ2wweLqKyorHPXkFQTsIbX1ligEUDrJluJjkKgI=";
+      patches = patchesFor25_1;
     }
     {
       version = "24.3.1";
       url = "https://downloads.intel.com/akdlm/software/acdsinst/24.3.1/102/ib_tar/Quartus-pro-24.3.1.102-linux-complete.tar";
-      hash = "sha256-NLmixbJZshegdg6lhp67lApfU3cmaCbarYpKOmeAK2E=";
+      hash = "sha256-nrF2Yr5IMt1BipPPDkSSEn3gZx8Z6TPvD79UAApqWQs=";
+      patches = patchesFor24_3;
     }
     {
       version = "24.2";
       url = "https://downloads.intel.com/akdlm/software/acdsinst/24.2/40/ib_tar/Quartus-pro-24.2.0.40-linux-complete.tar";
-      hash = "sha256-vxps9aXwjuSAJh1SfObodkFBC76Bk/Vemz0MfQV7lxg=";
+      hash = "sha256-DF2xsXbEVh4/UfPoXAlkfUJsKWGC5yc7hz0Ej7n7/og=";
+      patches = patchesFor24_2;
     }
   ];
 
