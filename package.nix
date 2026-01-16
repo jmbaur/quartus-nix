@@ -3,6 +3,7 @@
   fetchurl,
   fetchzip,
   lib,
+  ncurses5,
   pkgsBuildBuild,
   runtimeShell,
 }:
@@ -154,6 +155,13 @@ lib.makeOverridable (
       chmod +x ''${progs_wrapped[@]}
       # link into $out/bin so executables become available on $PATH
       ln --symbolic --relative --target-directory ./bin ''${progs_wrapped[@]}
+    '';
+
+    # Hack to make etile executable work. The ldconfig in the FHS env
+    # doesn't pick up libncurses.so.5 for some reason. See
+    # https://github.com/NixOS/nixpkgs/issues/89769 for more info.
+    profile = ''
+      export LD_LIBRARY_PATH=${lib.makeLibraryPath [ ncurses5 ]}:$LD_LIBRARY_PATH
     '';
 
     # Directly passthrough commands from the outer enviroment.
