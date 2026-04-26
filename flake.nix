@@ -1,6 +1,12 @@
 {
   description = "quartus-nix";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-compat = {
+      url = "github:NixOS/flake-compat";
+      flake = false;
+    };
+  };
   outputs = inputs: {
     overlays.default =
       final: prev:
