@@ -61,6 +61,12 @@ in
 
   quartus-pro-programmer = [
     {
+      version = "26.1-110";
+      url = "https://downloads.intel.com/akdlm/software/acdsinst/26.1/110/ib_installers/QuartusProProgrammerSetup-26.1.0.110-linux.run";
+      hash = "sha256-HfzxlbVbqzkZ2AxHsvVfYI0MRxfliwIdi/tZ09FyPko=";
+      patches = [ ];
+    }
+    {
       version = "25.3.1-100";
       url = "https://downloads.intel.com/akdlm/software/acdsinst/25.3.1/100/ib_installers/QuartusProProgrammerSetup-25.3.1.100-linux.run";
       hash = "sha256-cKK+MMBMoogWuQDRqVsRqEcrKtC+ZRJgEqbc5R2lFVI=";
