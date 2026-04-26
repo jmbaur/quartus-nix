@@ -6,15 +6,32 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf mkPackageOption;
+  inherit (lib)
+    foldl
+    mkEnableOption
+    mkIf
+    mkOption
+    types
+    versionOlder
+    ;
 
   cfg = config.programs.quartus-pro-programmer;
+
+  latestSource = foldl (a: b: if versionOlder a.version b.version then b else a) {
+    version = "0";
+  } (import ./sources.nix).quartus-pro-programmer;
 in
 {
   options.programs.quartus-pro-programmer = {
     enable = mkEnableOption "quartus-pro-programmer";
-    package = mkPackageOption pkgs "quartus-pro-programmer-latest" { };
-
+    package = mkOption {
+      type = types.package;
+      default = (pkgs.callPackage ./package.nix { }) {
+        pname = "quartus-pro-programmer-latest";
+        inherit (latestSource) version;
+        inherit latestSource;
+      };
+    };
     jtagd.enable = mkEnableOption "jtagd server";
   };
 
