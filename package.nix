@@ -3,12 +3,25 @@
   fetchurl,
   fetchzip,
   lib,
+  makeDesktopItem,
   ncurses5,
   pkgsBuildBuild,
   runtimeShell,
 }:
 
 let
+  desktopItem = makeDesktopItem {
+    name = "quartus";
+    desktopName = "Quartus";
+    exec = "quartus";
+    icon = "quartusii";
+    terminal = false;
+    type = "Application";
+    categories = [ "Development" ];
+    startupWMClass = "Quartus";
+    startupNotify = true;
+  };
+
   # Nix's seccomp settings (via the syscall-filter nix.conf option) disallow
   # creating setuid/setgid binaries, so we shim in our own chmod that unsets
   # the setuid/setgid bits in all chmod calls.
@@ -155,6 +168,12 @@ lib.makeOverridable (
       chmod +x ''${progs_wrapped[@]}
       # link into $out/bin so executables become available on $PATH
       ln --symbolic --relative --target-directory ./bin ''${progs_wrapped[@]}
+
+      # If we are not quartus-pro-programmer, install desktop files
+      if ! [[ -d "${installation}"/qprogrammer ]]; then
+        find ${installation} -type f -name quartusii.png -exec install -Dm0644 {} $out/share/icons/hicolor/64x64/apps/quartusii.png \;
+        install -Dm0644 ${desktopItem}/share/applications/quartus.desktop $out/share/applications/quartus.desktop
+      fi
     '';
 
     # Hack to make etile executable work. The ldconfig in the FHS env
