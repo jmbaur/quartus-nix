@@ -29,7 +29,7 @@ in
       default = (pkgs.callPackage ./package.nix { }) {
         pname = "quartus-pro-programmer-latest";
         inherit (latestSource) version;
-        inherit latestSource;
+        source = latestSource;
       };
     };
     jtagd.enable = mkEnableOption "jtagd server";
