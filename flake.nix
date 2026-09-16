@@ -7,65 +7,80 @@
       flake = false;
     };
   };
-  outputs = inputs: {
-    overlays.default =
-      final: prev:
-      let
-        inherit (prev.lib)
-          flatten
-          foldl
-          listToAttrs
-          mapAttrsToList
-          replaceStrings
-          versionOlder
-          versions
-          ;
-      in
-      {
-        makeQuartus = prev.callPackage ./package.nix { };
-      }
-      // listToAttrs (
-        flatten (
-          mapAttrsToList (
-            package: sources:
-            (map (source: {
-              name = "${package}-${replaceStrings [ "." ] [ "_" ] (versions.majorMinor source.version)}";
-              value = final.makeQuartus {
-                pname = package;
+  outputs =
+    inputs:
+    let
+      inherit (inputs.nixpkgs) lib;
+
+      quartusPackages = lib.flatten (
+        lib.mapAttrsToList (
+          pname:
+          { hasCompiler, sources }:
+          (map (source: {
+            attrName = "${pname}-${
+              lib.replaceStrings [ "." ] [ "_" ] (lib.versions.majorMinor source.version)
+            }";
+            inherit pname hasCompiler source;
+          }) sources)
+          # Add an alias to the latest version, suffixed with "-latest"
+          ++ [
+            {
+              attrName = "${pname}-latest";
+              inherit pname hasCompiler;
+              source = lib.foldl (a: b: if lib.versionOlder a.version b.version then b else a) {
+                version = "0";
+              } sources;
+            }
+          ]
+        ) (import ./sources.nix)
+      );
+    in
+    {
+      overlays.default =
+        final: prev:
+        {
+          makeQuartus = prev.callPackage ./package.nix { };
+        }
+        // lib.listToAttrs (
+          map (
+            {
+              attrName,
+              pname,
+              hasCompiler,
+              source,
+            }:
+            lib.nameValuePair attrName (
+              final.makeQuartus {
+                inherit pname hasCompiler source;
                 inherit (source) version;
-                inherit source;
-              };
-            }) sources)
-            # Add an alias to the latest version, suffixed with "-latest"
-            ++ (
-              let
-                source = foldl (a: b: if versionOlder a.version b.version then b else a) {
-                  version = "0";
-                } sources;
-              in
-              [
-                {
-                  name = "${package}-latest";
-                  value = final.makeQuartus {
-                    pname = package;
-                    inherit (source) version;
-                    inherit source;
-                  };
-                }
-              ]
+              }
             )
-          ) (import ./sources.nix)
-        )
+          ) quartusPackages
+        );
+
+      nixosModules.default.imports = [ ./module.nix ];
+
+      legacyPackages = lib.genAttrs [ "x86_64-linux" ] (
+        system:
+        import inputs.nixpkgs {
+          inherit system;
+          overlays = [ inputs.self.overlays.default ];
+        }
       );
 
-    nixosModules.default.imports = [ ./module.nix ];
-
-    legacyPackages = inputs.nixpkgs.lib.genAttrs [ "x86_64-linux" ] (
-      system:
-      import inputs.nixpkgs {
-        inherit system;
-        overlays = [ inputs.self.overlays.default ];
-      }
-    );
-  };
+      checks = lib.genAttrs [ "x86_64-linux" ] (
+        system:
+        let
+          pkgs = inputs.self.legacyPackages.${system};
+        in
+        lib.listToAttrs (
+          map (
+            { attrName, ... }:
+            lib.nameValuePair "${attrName}-smoke-test" (
+              pkgs.callPackage ./tests/smoke-test.nix { quartus = pkgs.${attrName}; }
+            )
+          ) (lib.filter ({ hasCompiler, ... }: hasCompiler) quartusPackages)
+        )
+      );
+    };
 }
