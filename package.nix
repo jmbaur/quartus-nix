@@ -193,6 +193,7 @@ lib.makeOverridable (
       pkgs.bash
       pkgs.bzip2
       pkgs.db4
+      pkgs.dbus
       pkgs.expat
       pkgs.fontconfig
       pkgs.freetype
@@ -207,14 +208,19 @@ lib.makeOverridable (
       pkgs.kdePackages.qtremoteobjects
       pkgs.kdePackages.qtscxml
       pkgs.kdePackages.qtsensors
+      pkgs.kdePackages.qtshadertools
       pkgs.kdePackages.qtspeech
+      pkgs.kdePackages.qtsvg
       pkgs.kdePackages.qtvirtualkeyboard
       pkgs.kdePackages.qtwebchannel
       pkgs.kdePackages.qtwebsockets
       pkgs.libGL
       pkgs.libdrm
       pkgs.libice
+      pkgs.libjpeg
+      pkgs.libpng12
       pkgs.libsm
+      pkgs.libuuid
       pkgs.libx11
       pkgs.libxau
       pkgs.libxcb
@@ -230,7 +236,9 @@ lib.makeOverridable (
       pkgs.libxi
       pkgs.libxkbcommon
       pkgs.libxrender
+      pkgs.libxscrnsaver
       pkgs.libxtst
+      pkgs.ncurses
       pkgs.ncurses5
       pkgs.python3
       pkgs.readline
