@@ -227,8 +227,10 @@ lib.makeOverridable (
       pkgs.libxdmcp
       pkgs.libxext
       pkgs.libxft
+      pkgs.libxi
       pkgs.libxkbcommon
       pkgs.libxrender
+      pkgs.libxtst
       pkgs.ncurses5
       pkgs.python3
       pkgs.readline
