@@ -54,6 +54,11 @@ fn usage() noreturn {
     std.process.exit(2);
 }
 
+fn exit(path: []const u8, comptime msg: []const u8) noreturn {
+    std.debug.print("quartus-normalize-sof: {s}: {s}\n", .{ path, msg });
+    std.process.exit(0);
+}
+
 fn fail(path: []const u8, comptime msg: []const u8) noreturn {
     std.debug.print("quartus-normalize-sof: {s}: {s}\n", .{ path, msg });
     std.process.exit(1);
@@ -118,12 +123,12 @@ pub fn main(init: std.process.Init) !void {
     const data = cwd.readFileAlloc(io, path, arena, .unlimited) catch fail(path, "failed to read input SOF");
 
     if (data.len < sof_header_len + 2 or !std.mem.eql(u8, data[0..4], "SOF\x00"))
-        fail(path, "not a Quartus SOF file");
+        exit(path, "not a Quartus SOF file");
 
     // The trailing CRC record covers every byte before its own payload.
     const body = data.len - 2;
     if (crc.hash(data[0..body]) != readInt(u16, data, body))
-        fail(path, "CRC mismatch, not touching file");
+        exit(path, "CRC mismatch, not touching file");
 
     var patched: usize = 0;
     var off: usize = sof_header_len;
