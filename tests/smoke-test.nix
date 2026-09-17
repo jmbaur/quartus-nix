@@ -48,15 +48,6 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
-  # Smoke test that our setup hook modifications didn't break quartus' ability
-  # to ingest the SOF.
-  postFixup = ''
-    if ! quartus_cpf -c $out/blinky.sof $NIX_BUILD_TOP/roundtrip.rbf; then
-      echo "quartus_cpf read failed for SOF $sof" >&2
-      exit 1
-    fi
-  '';
-
   meta = {
     description = "Compile a tiny design end to end with ${quartus.pname}";
     inherit (quartus.meta) platforms;

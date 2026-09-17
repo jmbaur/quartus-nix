@@ -35,30 +35,6 @@ let
     }
   ) { };
 
-  # Consumes $SOURCE_DATE_EPOCH to make SOFs more likely to be reproducible.
-  normalizeSof = pkgsBuildBuild.callPackage (
-    { stdenvNoCC, zig }:
-    stdenvNoCC.mkDerivation {
-      name = "quartus-normalize-sof";
-      nativeBuildInputs = [ zig ];
-      buildCommand = ''
-        mkdir -p $out/bin
-
-        export ZIG_GLOBAL_CACHE_DIR="$NIX_BUILD_TOP/zig-cache"
-        export ZIG_LOCAL_CACHE_DIR="$ZIG_GLOBAL_CACHE_DIR"
-
-        zig build-exe -OReleaseSafe -fstrip \
-          -femit-bin=$out/bin/quartus-normalize-sof \
-          ${./normalize-sof.zig}
-      '';
-    }
-  ) { };
-
-  setupHook = pkgsBuildBuild.makeSetupHook {
-    name = "quartus-setup-hook";
-    substitutions.normalizeSof = "${normalizeSof}/bin/quartus-normalize-sof";
-  } ./setup-hook.sh;
-
   # The quartus installer assumes it is running on an FHS-compliant Linux
   # system.
   installerFhsEnv = pkgsBuildBuild.callPackage (
@@ -76,8 +52,7 @@ lib.makeOverridable (
     pname,
     version,
     source,
-    # Only the packages that ship a compiler can produce bitstreams.
-    hasCompiler ? true,
+    ...
   }:
 
   let
@@ -200,10 +175,6 @@ lib.makeOverridable (
         find ${installation} -type f -name quartusii.png -exec install -Dm0644 {} $out/share/icons/hicolor/64x64/apps/quartusii.png \;
         install -Dm0644 ${desktopItem}/share/applications/quartus.desktop $out/share/applications/quartus.desktop
       fi
-
-      ${lib.optionalString hasCompiler ''
-        install -Dm0644 ${setupHook}/nix-support/setup-hook $out/nix-support/setup-hook
-      ''}
     '';
 
     # Hack to make etile executable work. The ldconfig in the FHS env
